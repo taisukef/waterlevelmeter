@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<!-- (c)taisukef CC BY  http://fukuno.jig.jp/ -->
+<html>
+<head>
+<meta charset='utf-8'/>
+<title>鯖江市論出川水位メーター / リアルタイムオープンデータのSPARQL取得</title>
+<meta property="og:image" content="http://fukuno.jig.jp/app/waterlevel/ss.png">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, target-densitydpi=medium-dpi">
+<meta name="format-detection" content="telephone=no">
+<script src="lib/fukuno.js"></script>
+<script>"use strict";
+
+var getWaterLevelSPARQL = function(sensor, callback) {
+	var query = f2s(function() {/*
+		PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+		PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+		PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+		PREFIX dct: <http://purl.org/dc/terms/>
+		PREFIX odp: <http://odp.jig.jp/odp/1.0#>
+		SELECT ?watchedAt ?value {
+			?s rdf:next rdf:nil;
+			rdf:type odp:WaterLevel;
+			<http://schema.org/spatial> {sensor};
+			dct:createdAt ?watchedAt;
+			rdf:value ?value.
+		}
+	*/});
+	query = query.replace("{sensor}", "<" + sensor + ">");
+	var url = "http://sparql.odp.jig.jp/api/v1/sparql?query=" + encodeURIComponent(query) + "&output=json";
+	url += "&callback=" + getCallbackMethod(function(data) {
+		var d = data.results.bindings[0];
+		callback(d.watchedAt.value, d.value.value);
+	});
+	jsonp(url);
+};
+
+window.onload = function() {
+	var sensor = "http://odp.jig.jp/jp/fukui/sabae/waterlevelsensor/1"
+	var f = function() {
+		getWaterLevelSPARQL(sensor, function(datetime, value) {
+			get("datetime").textContent = datetime.replace("T", " ");
+			get("value").textContent = value;
+		});
+	};
+	setInterval(f, 5 * 60 * 1000);
+	f();
+};
+
+</script>
+<style>
+body {
+	margin: 0px;
+	box-sizing: border-box; /* width include border */
+	-webkit-text-size-adjust: none; /* for iPhone */
+}
+body {
+	text-align: center;
+}
+#main {
+	display: inline-block;
+	width: 300px;
+	height: 300px;
+	background-color: #8ca8ff;
+	position: relative;
+}
+#level {
+	padding-top: 60px;
+	font-size: 70px;
+	color: #002699;
+}
+#datetime {
+	font-size: 18px;
+	color: #002699;
+}
+a {
+	color: gray !important;
+}
+#credit {
+	font-size: 90%;
+	margin: 10px;
+}
+@media screen and (min-width: 440px) {
+}
+</style>
+</head>
+<body>
+
+<h1>鯖江市 論出川水位メーター</h1>
+<div id="main">
+	<div id="level"><span id="value"></span>cm</div>
+	<div id="datetime"></div>
+</div>
+
+<div id='credit'>
+See Also: <a href=http://www.city.sabae.fukui.jp/pageview.html?id=15849 target=_blank>福井県鯖江市＞鯖江市河川水位観測情報</a><br>
+DATA: CC BY <a href=http://ckan.odp.jig.jp/dataset/fukui-sabae-waterlevel-odp target=_blank>水位データ(福井県鯖江市) - データセット - odp | CKAN</a><br>
+APP: CC BY <a href='http://fukuno.jig.jp/'>fukuno.jig.jp</a><br>
+</div>
+
+</body>
+</html>
