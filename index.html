@@ -17,11 +17,11 @@ var getWaterLevelSPARQL = function(sensor, callback) {
 		PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 		PREFIX dct: <http://purl.org/dc/terms/>
 		PREFIX odp: <http://odp.jig.jp/odp/1.0#>
-		SELECT ?watchedAt ?value {
+		SELECT ?created ?value {
 			?s rdf:next rdf:nil;
 			rdf:type odp:WaterLevel;
 			<http://schema.org/spatial> {sensor};
-			dct:createdAt ?watchedAt;
+			dct:created ?created;
 			rdf:value ?value.
 		}
 	*/});
@@ -29,7 +29,7 @@ var getWaterLevelSPARQL = function(sensor, callback) {
 	var url = "http://sparql.odp.jig.jp/api/v1/sparql?query=" + encodeURIComponent(query) + "&output=json";
 	url += "&callback=" + getCallbackMethod(function(data) {
 		var d = data.results.bindings[0];
-		callback(d.watchedAt.value, d.value.value);
+		callback(d.created.value, d.value.value);
 	});
 	jsonp(url);
 };
@@ -94,7 +94,7 @@ a {
 <div id='credit'>
 See Also: <a href=http://www.city.sabae.fukui.jp/pageview.html?id=15849 target=_blank>福井県鯖江市＞鯖江市河川水位観測情報</a><br>
 DATA: CC BY <a href=http://ckan.odp.jig.jp/dataset/fukui-sabae-waterlevel-odp target=_blank>水位データ(福井県鯖江市) - データセット - odp | CKAN</a><br>
-APP: CC BY <a href='http://fukuno.jig.jp/'>fukuno.jig.jp</a><br>
+APP: CC BY <a href='http://fukuno.jig.jp/896'>fukuno.jig.jp</a> (<a href=https://github.com/taisukef/waterlevelmeter target=_blank>src</a>)<br>
 </div>
 
 </body>
